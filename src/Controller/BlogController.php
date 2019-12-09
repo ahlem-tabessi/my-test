@@ -9,6 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\FileUploader;
+use App\Entity\Auteur;
+use App\Form\AuteurType;
 
 /**
  * @Route("/blog")
@@ -28,13 +31,26 @@ class BlogController extends AbstractController
     /**
      * @Route("/new", name="blog_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request,FileUploader $fileUploader): Response
     {
         $blog = new Blog();
+
+
+        
         $form = $this->createForm(BlogType::class, $blog);
         $form->handleRequest($request);
-
+        dump($form->isSubmitted());
         if ($form->isSubmitted() && $form->isValid()) {
+             /** @var UploadedFile $brochureFile */
+            $brochureFile = $form['brochure']->getData();
+            if ($brochureFile) {
+            $brochureFileName = $fileUploader->upload($brochureFile);
+            $blog->setBrochureFilename($brochureFileName);
+
+                // updates the 'brochureFilename' property to store the PDF file name
+                // instead of its contents
+                
+            }   
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($blog);
             $entityManager->flush();
@@ -61,13 +77,20 @@ class BlogController extends AbstractController
     /**
      * @Route("/{id}/edit", name="blog_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Blog $blog): Response
+    public function edit(Request $request, Blog $blog,FileUploader $fileUploader): Response
     {
         $form = $this->createForm(BlogType::class, $blog);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $brochureFile */
+        $brochureFile = $form['brochure']->getData();
+        if ($brochureFile) {
+            $brochureFileName = $fileUploader->upload($brochureFile);
+            $blog->setBrochureFilename($brochureFileName);
+        }
             $this->getDoctrine()->getManager()->flush();
+
 
             return $this->redirectToRoute('blog_index');
         }

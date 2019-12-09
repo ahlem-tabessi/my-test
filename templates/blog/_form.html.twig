@@ -1,4 +1,26 @@
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+
+{% block body %}
+
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_row(form.titre, {'attr' : {'placeholder' : "titre du blog"}})}}
+{{ form_row(form.content, {'attr' : {'placeholder' : "desc du blog"}})}}
+{{ form_row(form.brochure, {'attr' : {'placeholder' : "brochure du blog"}})}}
+<h3>Auteurs</h3>
+  <ul class="auteurs" data-prototype="{{ form_widget(form.auteurs.vars.prototype)|e('html_attr') }}">
+    
+
+        {# iterate over each existing tag and render its only field: nom #}
+        {% for auteur in form.auteurs %}
+            <li>{{ form_row(auteur.nom) }}</li>
+        {% endfor %}
+    
+</ul>
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}
+
+{% endblock %}
+ 
+
